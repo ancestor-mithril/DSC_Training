@@ -24,7 +24,6 @@ const requireAuth = (req, res, next) => {
 
 
 const payloadValidation = (schema) => async (req, res, next) => {
-    console.log("payload");
     try {
         console.log("body", req.body);
         const value = schema.validate(req.body);

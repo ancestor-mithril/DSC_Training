@@ -6,7 +6,7 @@ const create = async (req, res) => {
         const { title, authors, publishDate, price, stock } = req.body;
 
         let authorsId = Array();
-        console.log("authors", authors);
+        // console.log("authors", authors);
 
         for (let name of authors) {
             const author = await AuthorModel.findOne({
@@ -21,9 +21,11 @@ const create = async (req, res) => {
             }
             authorsId.push(author._id);
         }
+        // console.log(authorsId);
 
         const oldBook = await BookModel.findOne({
-            title, authorsId
+            title, 
+            authors: authorsId,
         });
 
         if (oldBook) {
@@ -36,19 +38,18 @@ const create = async (req, res) => {
 
         const bookId = await BookModel.create({
             title,
-            authorsId,
+            authors: authorsId,
             publish_date: publishDate,
             price,
             stock,
         });
 
-        console.log(`book id: ${bookId}`);
+        // console.log(`book id: ${bookId}`);
 
-        for (let authorId in authorsId) {
+        for (let authorId of authorsId) {
             var query = { '_id': authorsId };
-            req.newData.username = req.user.username;
 
-            MyModel.findOneAndUpdate(
+            AuthorModel.findOneAndUpdate(
                 query,
                 { $push: { books: bookId  } },
                 { upsert: false }, 

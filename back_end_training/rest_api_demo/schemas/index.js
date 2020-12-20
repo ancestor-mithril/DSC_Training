@@ -17,7 +17,7 @@ const book = Joi.object({
     authors: Joi.array().items(
         Joi.string().regex(/^[ \-'a-zA-Z]*$/).min(3).max(30).required(),
     ).min(1).required(),
-    publishDate: Joi.number().integer().min(0).max((new Date()).getFullYear()),
+    publishDate: Joi.number().integer().min(0).max((new Date()).getFullYear()).required(),
     price: Joi.number().precision(2).min(0).required(),
     stock: Joi.number().integer().min(0).required(),
 })

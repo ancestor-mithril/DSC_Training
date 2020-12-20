@@ -3,7 +3,7 @@ const { AuthorModel } = require("../models");
 
 const create = async (req, res) => {
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const { name, dateOfBirth, dateOfDeath, nationality } = req.body;
 
         const oldAuthor = await AuthorModel.findOne({
