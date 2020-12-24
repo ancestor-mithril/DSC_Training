@@ -52,6 +52,7 @@ const login = async (req, res) => {
                 success: false,
                 message: "user not found",
             });
+            return;
         }
 
         const checkPassword = bcrypt.compareSync(password, user.password);
@@ -61,11 +62,12 @@ const login = async (req, res) => {
                 success: false,
                 message: "password doesnt match",
             });
+            return;
         }
         console.log("isAdmin", user.admin);
         const token = encrypt({
             userId: user._id,
-            isAdmin: user.admin,
+            isAdmin: (user.admin) ? true : undefined,
         });
 
         res.status(StatusCodes.OK).json({

@@ -1,11 +1,12 @@
 const { decrypt } = require("../utils");
+const { StatusCodes } = require("http-status-codes");
 
 const requireAuth = (req, res, next) => {
     try {
         const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
 
         if (!token) {
-            res.status(401).json({
+            res.status(StatusCodes.UNAUTHORIZED).json({
                 success: false,
             });
             return;
@@ -16,20 +17,38 @@ const requireAuth = (req, res, next) => {
         req.user = claims;
         next();
     } catch (error) {
-        res.status(500).json({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
         });
     }
 };
 
+const requireAdmin = (req, res, next) => {
+    try {
+        // console.log(req.user);
+        if (!req.user.isAdmin) {
+            res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+            });
+            return;
+        }
+        next();
+    }
+    catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+        });
+    }
+}
+
 
 const payloadValidation = (schema) => async (req, res, next) => {
     try {
-        console.log("body", req.body);
+        // console.log("body", req.body);
         const value = schema.validate(req.body);
-        console.log("value", value);
+        // console.log("value", value);
         if (value.error) {
-            res.status(400).json({
+            res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: value.error.message,
             });
@@ -38,7 +57,7 @@ const payloadValidation = (schema) => async (req, res, next) => {
 
         next();
     } catch (error) {
-        res.status(500).json({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
         });
     }
@@ -46,5 +65,6 @@ const payloadValidation = (schema) => async (req, res, next) => {
 
 module.exports = {
     requireAuth,
+    requireAdmin,
     payloadValidation,
 };

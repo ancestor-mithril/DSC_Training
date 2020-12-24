@@ -10,7 +10,15 @@ const decrypt = (token) => {
     return jwt.decode(token, process.env.SECRET);
 };
 
+const asyncForEach = async (array, callback) => {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
+}
+
+
 module.exports = {
     encrypt,
     decrypt,
+    asyncForEach,
 }; 

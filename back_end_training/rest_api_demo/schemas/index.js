@@ -1,4 +1,5 @@
 const Joi = require("joi");
+Joi.objectId = require('joi-objectid')(Joi);
 
 const auth = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).required(),
@@ -20,10 +21,20 @@ const book = Joi.object({
     publishDate: Joi.number().integer().min(0).max((new Date()).getFullYear()).required(),
     price: Joi.number().precision(2).min(0).required(),
     stock: Joi.number().integer().min(0).required(),
+});
+
+const user = Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+});
+
+const authorId = Joi.object({
+    authorId: Joi.objectId().required(),
 })
 
 module.exports = {
     auth,
     author, 
+    authorId,
     book,
+    user,
 };
