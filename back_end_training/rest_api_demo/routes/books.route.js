@@ -9,5 +9,6 @@ router.get("/", bookController.getBooks);
 router.get("/get_book", payloadValidation(bookId) ,bookController.getBook);
 router.get("/search_book_by_title", payloadValidation(bookTitle) ,bookController.searchBookByTitle);
 router.get("/search_book_by_author", payloadValidation(authorName) ,bookController.searchBookByAuthor);
+router.put("/update", requireAdmin, payloadValidation(book), bookController.update);
 
 module.exports = router;

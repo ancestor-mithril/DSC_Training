@@ -245,10 +245,44 @@ const searchAuthorByBook = async (req, res) => {
 }
 
 
+const update = async (req, res) => {
+    try {
+        const { authorId, name, dateOfBirth, dateOfDeath, nationality } = req.body;
+        
+        if (!authorId) {
+            throw new Error("author id not provided");
+        }
+
+        let newAuthor = {
+            name,
+            date_of_birth: dateOfBirth,
+            date_of_death: (dateOfDeath) ? dateOfDeath : undefined,
+            nationality
+        }
+
+        await AuthorModel.findOneAndUpdate(
+            {_id: authorId}, 
+            newAuthor,
+        );
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
+}
+
+
 module.exports = {
     create,
     getAuthors,
     getAuthor,
     searchAuthorByName,
     searchAuthorByBook,
+    update,
 };

@@ -7,6 +7,7 @@ const auth = Joi.object({
 });
 
 const author = Joi.object({
+    authorId: Joi.objectId(),
     name: Joi.string().regex(/^[ \-'a-zA-Z]*$/).min(3).max(30).required(),
     dateOfBirth: Joi.number().integer().min(-5000).max((new Date()).getFullYear()).required(),
     dateOfDeath: Joi.number().integer().min(-5000).max((new Date()).getFullYear()),
@@ -14,6 +15,7 @@ const author = Joi.object({
 });
 
 const book = Joi.object({
+    bookId: Joi.objectId(),
     title: Joi.string().min(2).max(30).required(),
     authors: Joi.array().items(
         Joi.string().regex(/^[ \-'a-zA-Z]*$/).min(3).max(30).required(),

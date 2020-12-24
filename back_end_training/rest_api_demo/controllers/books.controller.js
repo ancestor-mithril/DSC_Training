@@ -280,10 +280,115 @@ const searchBookByAuthor = async (req, res) => {
 }
 
 
+const update = async (req, res) => {
+    try {
+        const { bookId, authors, title, publishDate, price, stock } = req.body;
+        
+        if (!bookId) {
+            throw new Error("author id not provided");
+        }
+
+        let oldBook = await BookModel.findOne({
+            _id: bookId,
+        });
+
+        const oldAuthors = oldBook.authors;
+
+        let newAuthors = Array();
+
+        for (let name of authors) {
+            const author = await AuthorModel.findOne({
+                name,
+            });
+            if (!author) {
+                res.status(StatusCodes.CONFLICT).json({
+                    success: false,
+                    message: `An author with name ${name} doesn't exist`,
+                });
+                return;
+            }
+            newAuthors.push(author._id);
+        }
+
+        oldBook = await BookModel.findOne({
+            title,
+            authors: newAuthors,
+        });
+
+        if (oldBook) {
+            res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: `a book with title ${title} and authors ${authors} already exists`,
+            });
+            return;
+        }
+
+        let newBook = {
+            title,
+            publish_date: publishDate,
+            authors: newAuthors,
+            price,
+            stock,
+        }
+
+        await BookModel.findOneAndUpdate(
+            {_id: bookId}, 
+            newBook,
+        );
+
+        for (let authorId of oldAuthors) {
+            var query = { '_id': authorId };
+            AuthorModel.findOneAndUpdate(
+                query,
+                { $pull: { books: bookId } },
+                { upsert: false },
+                function (err, doc) {
+                    if (err) {
+                        console.log(`Error: ${err}`);
+                    } else {
+                        console.log("Success");
+                    }
+                }
+            );
+        }
+
+
+        for (let authorId of newAuthors) {
+            var query = { '_id': authorId };
+
+            AuthorModel.findOneAndUpdate(
+                query,
+                { $push: { books: bookId } },
+                { upsert: false },
+                function (err, doc) {
+                    if (err) {
+                        console.log(`Error: ${err}`);
+                    } else {
+                        console.log("Success");
+                    }
+                }
+            );
+        }
+
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
+}
+
+
 module.exports = {
     create,
     getBooks,
     getBook,
     searchBookByTitle,
     searchBookByAuthor,
+    update,
 };
