@@ -384,6 +384,54 @@ const update = async (req, res) => {
 }
 
 
+const deleteBook = async (req, res) => {
+    try {
+        const { bookId } = req.body;
+
+        const oldBook = await BookModel.findOne(
+            { _id: bookId },
+        );
+
+        if (!oldBook) {
+            res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: `the book doesn't exist`,
+            });
+            return;
+        }
+
+        await BookModel.findOneAndRemove(
+            { _id: bookId },
+        );
+
+        oldBook.authors.forEach(i => {
+            AuthorModel.findOneAndUpdate(
+                {_id: i},
+                { $pull: { books: bookId } },
+                { upsert: false },
+                function (err, doc) {
+                    if (err) {
+                        console.log(`Error: ${err}`);
+                    } else {
+                        console.log("Success");
+                    }
+                }
+            );
+        });
+        
+        return res.status(StatusCodes.OK).json({
+            success: true,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
+}
+
+
 module.exports = {
     create,
     getBooks,
@@ -391,4 +439,5 @@ module.exports = {
     searchBookByTitle,
     searchBookByAuthor,
     update,
+    deleteBook,
 };

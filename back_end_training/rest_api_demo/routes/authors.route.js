@@ -10,5 +10,6 @@ router.get("/get_author", payloadValidation(authorId), authorController.getAutho
 router.get("/search_author_by_name", payloadValidation(authorName), authorController.searchAuthorByName);
 router.get("/search_author_by_book", payloadValidation(bookTitle), authorController.searchAuthorByBook);
 router.put("/update", requireAdmin, payloadValidation(author), authorController.update);
+router.delete("/delete", requireAdmin, payloadValidation(authorId), authorController.deleteAuthor);
 
 module.exports = router;

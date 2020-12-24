@@ -248,7 +248,7 @@ const searchAuthorByBook = async (req, res) => {
 const update = async (req, res) => {
     try {
         const { authorId, name, dateOfBirth, dateOfDeath, nationality } = req.body;
-        
+
         if (!authorId) {
             throw new Error("author id not provided");
         }
@@ -261,10 +261,51 @@ const update = async (req, res) => {
         }
 
         await AuthorModel.findOneAndUpdate(
-            {_id: authorId}, 
+            { _id: authorId },
             newAuthor,
         );
 
+        return res.status(StatusCodes.OK).json({
+            success: true,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
+}
+
+
+const deleteAuthor = async (req, res) => {
+    try {
+        const { authorId } = req.body;
+
+        const oldAuthor = await AuthorModel.findOne(
+            { _id: authorId },
+        );
+
+        if (!oldAuthor) {
+            res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: `the author doesn't exist`,
+            });
+            return;
+        }
+
+        await AuthorModel.deleteOne(
+            { _id: authorId },
+        );
+
+        console.log(oldAuthor.books);
+
+        await asyncForEach(oldAuthor.books, async (i) => {
+            await BookModel.deleteOne(
+                { _id: i }
+            );
+        });
+        
         return res.status(StatusCodes.OK).json({
             success: true,
         });
@@ -285,4 +326,5 @@ module.exports = {
     searchAuthorByName,
     searchAuthorByBook,
     update,
+    deleteAuthor,
 };
