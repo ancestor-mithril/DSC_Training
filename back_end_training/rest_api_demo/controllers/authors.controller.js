@@ -21,14 +21,14 @@ const create = async (req, res) => {
         }
 
         let newAuthor = {
-            name, 
-            date_of_birth: dateOfBirth, 
+            name,
+            date_of_birth: dateOfBirth,
             nationality
         }
 
         await AuthorModel.create({
-            name, 
-            date_of_birth: dateOfBirth, 
+            name,
+            date_of_birth: dateOfBirth,
             date_of_death: (dateOfDeath) ? dateOfDeath : undefined,
             nationality
         });
@@ -51,6 +51,13 @@ const getAuthors = async (req, res) => {
         let authorsMap = {};
         //const all = await AuthorModel.find().populate({ path: 'books', model: BookModel });
         await AuthorModel.find({}, async function (err, authors) {
+            if (err) {
+                console.error(err);
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: "something went wrong",
+                });
+            }
             try {
                 await asyncForEach(authors, async function (author) {
                     try {
@@ -87,7 +94,7 @@ const getAuthor = async (req, res) => {
     try {
         const { authorId } = req.body;
 
-        let author = await AuthorModel.findOne ({
+        let author = await AuthorModel.findOne({
             _id: authorId,
         });
 
@@ -100,12 +107,12 @@ const getAuthor = async (req, res) => {
         }
 
         author.populate({ path: 'books', model: BookModel }).execPopulate();
-        
+
         return res.status(StatusCodes.OK).json({
             success: true,
             author,
         });
-    }  catch (error) {
+    } catch (error) {
         console.error(error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,

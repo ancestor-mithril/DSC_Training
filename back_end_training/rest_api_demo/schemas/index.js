@@ -29,12 +29,27 @@ const user = Joi.object({
 
 const authorId = Joi.object({
     authorId: Joi.objectId().required(),
-})
+});
+
+const bookId =  Joi.object({
+    bookId: Joi.objectId().required(),
+});
+
+const bookTitle = Joi.object({
+    title: Joi.string().min(2).max(30).required(),
+});
+
+const authorName = Joi.object({
+    name: Joi.string().regex(/^[ \-'a-zA-Z]*$/).min(3).max(30).required(),
+});
 
 module.exports = {
     auth,
-    author, 
+    author,
     authorId,
+    authorName,
     book,
+    bookId,
+    bookTitle,
     user,
 };

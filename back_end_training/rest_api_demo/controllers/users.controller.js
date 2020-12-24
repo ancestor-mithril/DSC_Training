@@ -34,6 +34,13 @@ const getUsers = async (req, res) => {
     try {
         let userMap = {};
         await UserModel.find({}, function (err, users) {
+            if (err) {
+                console.error(err);
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: "something went wrong",
+                });
+            }
             users.forEach(function (user) {
                 userMap[user._id] = user;
             });
