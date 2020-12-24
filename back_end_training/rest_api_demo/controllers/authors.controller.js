@@ -119,8 +119,129 @@ const getAuthor = async (req, res) => {
             message: "something went wrong",
         });
     }
+}
 
 
+const searchAuthorByName = async (req, res) => {
+    try {
+        const { name } = req.body;
+        let authorsMap = {};
+
+        await AuthorModel.find(
+            {
+                "name": { "$regex": name, "$options": "i" },
+            }, async function (err, authors) {
+                if (err) {
+                    console.error(err);
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        message: "something went wrong",
+                    });
+                }
+                try {
+                    await asyncForEach(authors, async function (author) {
+                        try {
+                            await author.populate({ path: 'books', model: BookModel }).execPopulate();
+                            authorsMap[author._id] = author;
+
+                        }
+                        catch (error) {
+                            console.log(error);
+                            throw new Error(error);
+                        }
+                    });
+                    return res.status(StatusCodes.OK).json({
+                        success: true,
+                        authorsMap,
+                    });
+
+                } catch (error) {
+                    console.error(error);
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        message: "something went wrong",
+                    });
+                }
+            });
+        return;
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
+}
+
+
+const searchAuthorByBook = async (req, res) => {
+    try {
+        const { title } = req.body;
+        let bookList = [];
+        let authorsMap = {};
+
+        await BookModel.find(
+            { "title": title }, function (err, books) {
+                if (err) {
+                    console.error(err);
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        message: "something went wrong",
+                    });
+                }
+                for (let book of books) {
+                    bookList.push(book._id);
+                }
+            }
+        )
+
+        await AuthorModel.find(
+            {
+                "books": { "$in": bookList },
+            }, async function (err, authors) {
+                if (err) {
+                    console.error(err);
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        message: "something went wrong",
+                    });
+                }
+                try {
+                    await asyncForEach(authors, async function (author) {
+                        try {
+                            await author.populate({ path: 'books', model: BookModel }).execPopulate();
+                            authorsMap[author._id] = author;
+                        }
+                        catch (error) {
+                            console.log(error);
+                            throw new Error(error);
+                        }
+                    });
+                    return res.status(StatusCodes.OK).json({
+                        success: true,
+                        authorsMap,
+                    });
+
+                } catch (error) {
+                    console.error(error);
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        message: "something went wrong",
+                    });
+                }
+            });
+        return;
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
 }
 
 
@@ -128,4 +249,6 @@ module.exports = {
     create,
     getAuthors,
     getAuthor,
+    searchAuthorByName,
+    searchAuthorByBook,
 };
