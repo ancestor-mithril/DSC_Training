@@ -1,5 +1,7 @@
 ## Routes
 
+### [Replit](https://repl.it/@ancestormithril/DSCTraining#README.md)
+
 ### Admin user:
 ```
 {
