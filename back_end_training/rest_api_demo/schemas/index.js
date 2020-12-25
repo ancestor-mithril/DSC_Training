@@ -35,6 +35,7 @@ const authorId = Joi.object({
 
 const bookId =  Joi.object({
     bookId: Joi.objectId().required(),
+    noOfItems: Joi.number().integer().min(0),
 });
 
 const bookTitle = Joi.object({

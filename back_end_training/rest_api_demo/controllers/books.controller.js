@@ -1,5 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
-const { BookModel, AuthorModel } = require("../models");
+const { BookModel, AuthorModel, TransactionModel } = require("../models");
 const { asyncForEach } = require("../utils");
 
 const create = async (req, res) => {
@@ -432,6 +432,73 @@ const deleteBook = async (req, res) => {
 }
 
 
+const buyBook = async (req, res) => {
+    try {
+        const { bookId, noOfItems } = req.body;
+        const { userId } = req.user;
+
+        if (!noOfItems) {
+            res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: `"noOfItems" not specified`,
+            });
+            return;
+        }
+
+        const oldBook = await BookModel.findOne(
+            { _id: bookId },
+        );
+        if (!oldBook) {
+            res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: `the book doesn't exist`,
+            });
+            return;
+        }
+        if (oldBook.stock >= noOfItems) {
+            BookModel.findOneAndUpdate(
+                { _id: bookId },
+                {$inc: { stock: -noOfItems }},
+                { upsert: false }, 
+                function (err, doc) {
+                    if (err) {
+                        console.log(`Error: ${err}`);
+                    } else {
+                        console.log("Success");
+                    }
+                }
+            );
+
+            await TransactionModel.create({
+                user: userId,
+                book: oldBook._id,
+                total_price: oldBook.price * noOfItems,
+                no_of_items: noOfItems,
+            });
+
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+            });
+        }
+        else {
+            res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: `the book stock is ${oldBook.stock}, lower than ${noOfItems}`,
+            });
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "something went wrong",
+        });
+    }
+    
+}
+
+
 module.exports = {
     create,
     getBooks,
@@ -440,4 +507,5 @@ module.exports = {
     searchBookByAuthor,
     update,
     deleteBook,
+    buyBook,
 };

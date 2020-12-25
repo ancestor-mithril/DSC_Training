@@ -11,5 +11,6 @@ router.get("/search_book_by_title", payloadValidation(bookTitle) ,bookController
 router.get("/search_book_by_author", payloadValidation(authorName) ,bookController.searchBookByAuthor);
 router.put("/update", requireAdmin, payloadValidation(book), bookController.update);
 router.delete("/delete", requireAdmin, payloadValidation(bookId), bookController.deleteBook);
+router.post("/buy_book", payloadValidation(bookId), bookController.buyBook);
 
 module.exports = router;
