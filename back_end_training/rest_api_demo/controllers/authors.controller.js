@@ -294,17 +294,32 @@ const deleteAuthor = async (req, res) => {
             return;
         }
 
+        await asyncForEach(oldAuthor.books, async (bookId) => {
+            const oldBook = await BookModel.findOne(
+                { _id: bookId },
+            );
+            oldBook.authors.forEach(i => {
+                AuthorModel.findOneAndUpdate(
+                    {_id: i},
+                    { $pull: { books: bookId } },
+                    { upsert: false },
+                    function (err, doc) {
+                        if (err) {
+                            console.log(`Error: ${err}`);
+                        } else {
+                            console.log("Success");
+                        }
+                    }
+                );
+            });
+            await BookModel.deleteOne(
+                { _id: bookId }
+            );
+        });
+
         await AuthorModel.deleteOne(
             { _id: authorId },
         );
-
-        console.log(oldAuthor.books);
-
-        await asyncForEach(oldAuthor.books, async (i) => {
-            await BookModel.deleteOne(
-                { _id: i }
-            );
-        });
         
         return res.status(StatusCodes.OK).json({
             success: true,
